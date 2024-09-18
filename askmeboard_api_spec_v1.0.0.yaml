@@ -1,0 +1,442 @@
+openapi: 3.0.3
+info:
+  title: AskmeBoard 1.0.0
+  description: |
+    # API ReadMe
+    - ทุก API ใช้ Method POST
+    ## Create API
+    - ในการสร้างข้อมูลไม่ได้ใช้ข้อมูลทั้งหมดใน **Schemas** ใช้ข้อมูลที่ Require(ดอกจันทร์แดง) ดูได้ใน Request.body.schemas
+    
+    ## Read API
+    - ข้อมูลจะออกมาทั้งหมดตาม Schemas ไม่สนใจ Require(ดอกจันทร์แดง)
+    
+    ## Update API
+    - การแก้ไขข้อมูล id ที่ส่งไปการกำหนดข้อมูลอ้างอิงที่ต้องการแก้ไข จำเป็นต้องส่งเสมอ
+  contact:
+    email: thanakon.ng@buildextech.com
+  version: 1.0.0
+externalDocs:
+  description: aml-ft token
+  url: https://docs.google.com/document/d/1HJVswhF3GEzDfQ806E1Qg3mT2M31E-inJUDAUwOk7K8/edit?usp=sharing
+servers:
+  - url: http://localhost:5000/api/v1
+    description: Dev
+  - url: http://staging-api.example.com
+    description: Optional server description, e.g. Internal staging server for testing
+  - url: http://production-api.example.com
+    description: Optional server description, e.g. Internal staging server for production
+tags:
+  - name: Authorizations
+  - name: Users
+    description: Everything about your Users
+  - name: Backoffice
+    description: Everything about your Backoffice
+  - name: Admin
+    description: Everything about your Users
+  - name: News Types
+    description: Everything about your News Types
+  - name: News
+    description: Everything about your News
+paths:
+  /bo/auth/login:
+    post:
+      tags:
+        - Authorizations
+        - Backoffice
+      summary: AML900 Login to backoffice
+      description: เข้าสู่ระบบ Backoffice
+      requestBody:
+        description: .
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginModel'
+      responses:
+        '200':    # status code
+          description: .
+          content:
+            application/json:
+              schema: 
+               $ref: '#/components/schemas/AuthModel'
+  /bo/users/create:
+    post:
+      tags:
+        - Users
+        - Backoffice
+      summary: AML910 Create new users.
+      description: bo สร้าง user
+      requestBody:
+        description: Some field Mandatory for Create, Please check body schema
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IReqUserCreate'
+      responses:
+        '200':    # status code
+          description: .
+          content:
+            application/json:
+              schema: 
+               $ref: '#/components/schemas/UsersModel'
+  /bo/users/list/read:
+    post:
+      tags:
+        - Users
+        - Backoffice
+      summary: AML911 Returns a list of users.
+      description: Read user list in systems without admin sections.
+      requestBody:
+        description: Optional description in *Markdown*
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IUserListReadQuery'
+      responses:
+        '200':    # status code
+          description: A JSON array of user info.
+          content:
+            application/json:
+              schema: 
+               $ref: '#/components/schemas/IRespAllUserReadList'
+  /bo/users/read:
+    post:
+      tags:
+        - Users
+        - Backoffice
+      summary: AML912 Returns one users.
+      description: bo ดูข้อมูล user 1 คนด้วย uid โดยไม่มี Admin
+      requestBody:
+        description: Optional description in *Markdown*
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IReqUserReadQuery'
+      responses:
+        '200':    # status code
+          description: .
+          content:
+            application/json:
+              schema: 
+               $ref: '#/components/schemas/UsersModel'
+  /bo/users/update:
+    post:
+      tags:
+        - Users
+        - Backoffice
+      summary: AML913 Update one users.
+      description: bo ดูข้อมูล user เป็น list โดยไม่มี Admin
+      requestBody:
+        description: Optional description in *Markdown*
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IReqUserUpdate'
+      responses:
+        '200':    # status code
+          description: .
+          content:
+            application/json:
+              schema: 
+               $ref: '#/components/schemas/UsersModel'
+  /bo/users/delete:
+    post:
+      tags:
+        - Users
+        - Backoffice
+      summary: AML914 Delete one users.
+      description: bo ลบข้อมูล user 1 คน
+      requestBody:
+        description: Optional description in *Markdown*
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IReqUserUpdate'
+      responses:
+        '200':    # status code
+          description: .
+          content:
+            application/json:
+              schema: 
+               $ref: '#/components/schemas/UsersModel'             
+  /bo/news-types/create:
+    post:
+      tags:
+        - News Types
+        - Backoffice
+      summary: AML940 Create news types.
+      description: bo สร้าง news types
+      requestBody:
+        description: Some field Mandatory for Create, Please check body schema
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewsTypesModel'
+      responses:
+        '200':    # status code
+          description: .
+          content:
+            application/json:
+              schema: 
+               $ref: '#/components/schemas/NewsTypesModel'
+  /bo/news-types/list/read:
+    post:
+      tags:
+        - News Types
+        - Backoffice
+      summary: AML941 Returns a list of news types.
+      description: Read news types list.
+      requestBody:
+        description: Optional description in *Markdown*
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IUserListReadQuery'
+      responses:
+        '200':    # status code
+          description: A JSON array of user info.
+          content:
+            application/json:
+              schema: 
+               $ref: '#/components/schemas/IRespAllNewsTypesReadList'
+  /bo/news-types/read:
+    post:
+      tags:
+        - News Types
+        - Backoffice
+      summary: AML942 Returns one news types
+      description: bo ดูข้อมูล news types 1 รายการ
+      requestBody:
+        description: Optional description in *Markdown*
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IReqNewsTypesReadQuery'
+      responses:
+        '200':    # status code
+          description: .
+          content:
+            application/json:
+              schema: 
+               $ref: '#/components/schemas/NewsTypesModel'
+  /bo/news-types/update:
+    post:
+      tags:
+        - News Types
+        - Backoffice
+      summary: AML943 Update one news types.
+      description: bo แก้ไขข้อมูล news types 1 รายการ
+      requestBody:
+        description: Optional description in *Markdown*
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IReqNewsTypesUpdate'
+      responses:
+        '200':    # status code
+          description: .
+          content:
+            application/json:
+              schema: 
+               $ref: '#/components/schemas/NewsTypesModel'
+  /bo/news-types/delete:
+    post:
+      tags:
+        - News Types
+        - Backoffice
+      summary: AML914 Delete one users.
+      description: bo ลบข้อมูล user 1 คน
+      requestBody:
+        description: Optional description in *Markdown*
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IReqNewsTypesReadQuery'
+      responses:
+        '200':    # status code
+          description: .
+          content:
+            application/json:
+              schema: 
+               $ref: '#/components/schemas/NewsTypesModel'             
+                  
+components:
+  schemas:
+    LoginModel:
+      description: for login
+      type: object
+      properties:
+        username:
+          type: string
+          example: userambod
+        password:
+          type: string
+          example: passwordambod
+    AuthModel:
+      description: for authorization
+      type: object
+      properties:
+        token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+          description: aml-ft token
+    UsersModel:
+      description: table.users
+      type: object
+      properties:
+        u_uid:
+          type: string
+          example: f3%21l|5m235
+        u_username:
+          type: string
+          example: amblotto123
+        u_password:
+          type: string
+          example: amblotto123
+        u_phone_number:
+          type: string
+          example: '0612039510'
+        u_created_at:
+          type: string
+          example: 2024-07-24T00:00:00+07:00
+        u_updated_at:
+          type: string
+          example: 2024-07-24T00:00:00+07:00
+    AdminsModel:
+      description: table.admins
+      type: object
+      properties:
+        ad_id:
+          type: integer
+          example: 4
+        ad_users_u_id:
+          type: integer
+          example: 4
+        ad_permission:
+          $ref: '#/components/schemas/ADMIN_PERMISSION'
+          example: ADMIN
+        ad_created_at:
+          type: string
+          example: 2024-07-24T00:00:00+07:00
+        ad_updated_at:
+          type: string
+          example: 2024-07-24T00:00:00+07:00
+    NewsTypesModel:
+      type: object
+      properties:
+        newst_id:
+          type: integer
+          format: int32
+          description: 'Primary key'
+        newst_created_by_admin_ad_id:
+          type: integer
+          format: int32
+          description: 'แอดมินผู้สร้างประเภทข่าว'
+          example: 1
+        newst_title:
+          type: string
+          description: 'ชื่อประเภทข่าว'
+          example: 'ฝันบ่งบอกโชคชะตา'
+        newst_details:
+          type: string
+          description: 'เนื้อหาประเภทข่าวเก็บข้อมูลรูปแบบ html'
+          example: 'รวมรายละเอียดอธิบายฝันของคุณ'
+        newst_contents_total:
+          type: integer
+          format: int64
+          description: 'จำนวนข่าวในประเภททั้งหมด'
+        newst_subscribe_total:
+          type: integer
+          format: int64
+          description: 'จำนวนผู้ติดตามประเภทข่าว'
+        newst_created_at:
+          type: string
+          format: date-time
+          description: 'Timestamp when the news type was created'
+        newst_updated_at:
+          type: string
+          format: date-time
+          description: 'Timestamp when the news type was last updated'
+      required:
+        - newst_title
+        - newst_contents_total
+        - newst_subscribe_total
+        - newst_details
+    ADMIN_PERMISSION:
+      type: string
+      description: ENUM ADMIN_PERMISSION
+      enum:
+        - SUPER_ADMIN
+        - ADMIN
+    IReqUserCreate:
+      allOf:
+        - $ref: '#/components/schemas/UsersModel'
+      required:
+        - u_username
+        - u_password
+        - u_phone_number
+    IUserListReadQuery:
+      description: for query list
+      type: object
+      properties:
+        uid:
+          type: string
+          example: T3l45^43lb
+          description: =
+        username:
+          type: string
+          example: amlu12
+          description: LIKE result%
+        phone_number:
+          type: string
+          example: '0612344312'
+          description: LIKE result%
+    IRespAllUserReadList:
+      description: response array object
+      type: array
+      items:
+        $ref: '#/components/schemas/UsersModel'
+    IReqUserReadQuery:
+      description: for query by uid
+      type: object
+      properties:
+        u_uid:
+          type: string
+          example: T3l45^43lb
+          description: =
+    IReqUserUpdate:
+      allOf:
+        - $ref: '#/components/schemas/UsersModel'
+    IRespAllNewsTypesReadList:
+      type: array
+      items:
+        $ref: '#/components/schemas/NewsTypesModel'
+    IReqNewsTypesReadQuery:
+      type: object
+      properties:
+        newst_id:
+          type: integer
+          example: 3
+          description: 'id ข้อมูลที่ต้องการดู'
+      required:
+        - newst_id
+    IReqNewsTypesUpdate:
+      allOf:
+        - $ref: '#/components/schemas/NewsTypesModel'
+      required:
+        - newst_id
+        
+      
+
+        
+    
