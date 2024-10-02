@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: AskmeBoard 1.1.0
+  title: AskmeBoard 1.1.6
   description: |
     # API ReadMe
     - ทุก API ใช้ Method POST
@@ -23,7 +23,9 @@ info:
     | 20 Sep 24   | 1.1.2   | วางโครสร้าง Schema Paginations และปรับ Req Response api read list เป็น Paginations ทั้งหมด|
     | 23 Sep 24   | 1.1.3   | ต่อ Backoffice News RUD  |
     | 25 Sep 24   | 1.1.4   | ทำ Reuse Swagger Model |
-    | 1 Oct 24   | 1.1.5   | สร้าง Develop Sequence Tags สำหรับ Dev, Fix newst_id integer -> interger[ ] |
+    | 1 Oct 24   | 1.1.5   | สร้าง Develop Sequence Tags สำหรับ Dev, Fix newst_id integer -> interger[ ], Requirement ใหม่ เพิ่มชื่อผู้เขียนเข้าหน้า Home แก้ไข table.admins เพิ่ม ad_writer_alias เพื่อบ่งบอกชื่อผู้เขียน, AML200 ข่าวสารหน้า Home |
+    | 2 Oct 24   | 1.1.6   | API news view, news like |
+    | x Oct 24   | 1.1.x   | API news cancel like, user liked list |
 
   contact:
     email: jesada.ka@buildextech.com
@@ -557,7 +559,80 @@ paths:
   
   
 # Jump Client New
-
+  /v1/news/list/read:
+    post:
+      tags:
+        - News
+        - Develop Sequence
+      summary: AML200 Read news list.
+      description: |
+        ผู้ใข้ดูข่าวสารหน้าหลัก (Home) Client ประยุกต์การใช้งานข้อมูลด้วยตัวเอง เช่นเรื่องข้อมูลขนาดใหญ่ เล็ก หรือ การจัดกลุ่มข้อมูล
+      requestBody:
+        description: Some field Mandatory for Create, Please check body schema.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IQueryPagination'
+      responses:
+        '200':    # status code
+          description: .
+          content:
+            application/json:
+              schema: 
+               $ref: '#/components/schemas/IPagRespAllNewsHomeReadList'
+  # AML201 /v1/news/read:
+  # AML202 /v1/news/update:
+  # AML203 /v1/news/delete:
+  # AML204 /v1/news/views:
+  /v1/news/views/collect:
+    post:
+      tags:
+        - News
+        - Develop Sequence
+      summary: AML204 News View Collect for stats.
+      description: |
+        เก็บข้อมูลจำนวนผู้ใช้ดูข่าว (ยอดวิว), สร้าง news_viewed_total_rlt_external_users บันทึก ip และ increment news.news_viewed_total หากเป็น ip ใหม่ต่อข่าว
+      requestBody:
+        description: Some field Mandatory for Create, Please check body schema.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IReqCollectNewsViews'
+      responses:
+        '200':    # status code
+          description: .
+          content:
+            application/json:
+              schema: 
+               $ref: '#/components/schemas/NewsModel'
+  /v1/news/like/collect:
+    post:
+      tags:
+        - News
+        - Develop Sequence
+      summary: AML205 News Like from users.
+      description: |
+        เก็บข้อมูลจำนวนผู้ชอบข่าว (ยอดไลค์), สร้าง news_liked_total_rlt_users บันทึก user และ increment news.news_liked_total หากเป็น user คนใหม่ต่อข่าว
+      security:
+        - bearerAuthAmlFt: []
+      requestBody:
+        description: Some field Mandatory for Create, Please check body schema.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IReqLikeNews'
+      responses:
+        '200':    # status code
+          description: .
+          content:
+            application/json:
+              schema: 
+               $ref: '#/components/schemas/NewsModel'
+          
+  
 
 security:
   - bearerAuthAmlFt: []         # use the same name as above
@@ -631,6 +706,9 @@ components:
         ad_users_u_id:
           type: integer
           example: 4
+        ad_writer_alias:
+          type: string
+          example: แม่น้ำหนึ่ง
         ad_permission:
           $ref: '#/components/schemas/ADMIN_PERMISSION'
           example: ADMIN
@@ -715,6 +793,39 @@ components:
           type: string
           format: date-time
           description: Timestamp when the news was last updated
+    NewsImageModel:
+      type: object
+      description: ภาพข่าว
+      properties:
+        newsimg_id:
+          type: integer
+          description: รหัสภาพข่าว (Primary Key)
+          example: 1
+        newsimg_news_id:
+          type: integer
+          description: อ้างอิงข้อมูลหลักของภาพ (News ID)
+          example: 1
+        newsimg_priority:
+          type: integer
+          description: ลำดับความสำคัญของภาพ
+          example: 1
+        newsimg_img_link:
+          type: string
+          description: ลิงก์ภาพข่าว
+          example: "https://picsum.photos/id/237/200/300"
+        newsimg_created_at:
+          type: string
+          format: date-time
+          description: เวลาที่สร้างภาพข่าว
+          example: "2023-12-13T04:15:32Z"
+        newsimg_updated_at:
+          type: string
+          format: date-time
+          description: เวลาที่อัปเดตภาพข่าวล่าสุด
+          example: "2023-12-13T04:15:32Z"
+      required:
+        - newsimg_news_id
+        - newsimg_img_link
     News2NewsTypesModel:
       type: object
       properties:
@@ -877,6 +988,44 @@ components:
         - news_img_main_link
         - news_title
         - news_details
+    
+# Resp Home News
+    AdminPopulate:
+      type: object
+      properties:
+        admins:
+          type: object
+          properties:
+            ad_writer_alias:
+              type: string
+    NewsTypeList4NewsHome:
+      type: object
+      properties:
+        news_types:
+          $ref: '#/components/schemas/IRespAllNewsTypesReadList'
+    NewsImageList4NewsHome:
+      type: object
+      properties:
+        news_imgs_list:
+          type: array
+          items:
+            $ref: '#/components/schemas/NewsImageModel'
+    # NewsImageModel
+    IDListRespAllNewsHomeReadList:
+      type: object
+      properties:
+        data_list:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/NewsModel'
+              - $ref: '#/components/schemas/AdminPopulate'
+              - $ref: '#/components/schemas/NewsTypeList4NewsHome'
+              - $ref: '#/components/schemas/NewsImageList4NewsHome'
+    IPagRespAllNewsHomeReadList:
+      allOf:
+        - $ref: '#/components/schemas/IDListRespAllNewsHomeReadList'
+        - $ref: '#/components/schemas/IPagination'
         
     IQueryPagination:
       type: object
@@ -899,8 +1048,16 @@ components:
         rows_count:
           type: integer
           description: count of all 
-    
-        
+    IReqCollectNewsViews:
+      allOf:
+        - $ref: '#/components/schemas/NewsModel'
+      required:
+        - news_id
+    IReqLikeNews:
+      allOf:
+        - $ref: '#/components/schemas/NewsModel'
+      required:
+        - news_id
       
 
         
