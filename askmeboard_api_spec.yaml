@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: AskmeBoard 1.1.6
+  title: AskmeBoard
   description: |
     # API ReadMe
     - ทุก API ใช้ Method POST
@@ -24,12 +24,14 @@ info:
     | 23 Sep 24   | 1.1.3   | ต่อ Backoffice News RUD  |
     | 25 Sep 24   | 1.1.4   | ทำ Reuse Swagger Model |
     | 1 Oct 24   | 1.1.5   | สร้าง Develop Sequence Tags สำหรับ Dev, Fix newst_id integer -> interger[ ], Requirement ใหม่ เพิ่มชื่อผู้เขียนเข้าหน้า Home แก้ไข table.admins เพิ่ม ad_writer_alias เพื่อบ่งบอกชื่อผู้เขียน, AML200 ข่าวสารหน้า Home |
-    | 2 Oct 24   | 1.1.6   | API news view, news like |
-    | x Oct 24   | 1.1.x   | API news cancel like, user liked list |
+    | 2 Oct 24   | 1.1.6   | API AML204 news view, AML205 news like |
+    | 3 Oct 24   | 1.1.7   | API AML206 news cancel like, AML207 user liked list, AML956 bo view list |
+    | 3 Oct 24   | 1.1.8   | API AML201 news details, AML200 Add Query Recommended and Relate |
+    | *x Oct 24   | 1.1.x   | API Favourite System, Check Lottery Result |
 
   contact:
     email: jesada.ka@buildextech.com
-  version: 1.0.0
+  version: 1.1.8
 externalDocs:
   description: aml-ft token
   url: https://docs.google.com/document/d/1HJVswhF3GEzDfQ806E1Qg3mT2M31E-inJUDAUwOk7K8/edit?usp=sharing
@@ -59,6 +61,8 @@ tags:
     description: Everything about your Static File
   - name: Develop Sequence
     description: สำหรับเขต
+  - name: News Options
+    description: ฟังก์ชั่นเสริมข่าว  
 # Jump Path
 paths:
 # Jump Auth API
@@ -549,14 +553,47 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/IReqUpdateNews'
-      responses:
+      responses: 
         '200':    # status code
           description: .
           content:
             application/json:
               schema: 
                $ref: '#/components/schemas/NewsModel'             
-  
+  /v1/bo/news/views/detail:
+    post:
+      tags:
+        - News
+        - Backoffice
+        - Develop Sequence
+      summary: AML956 News Views Detail.
+      description: bo ดูข้อมูลผู้ชมข่าวสาร
+      security:
+        - bearerAuthAmlFt: []
+      requestBody:
+        description: Some field Mandatory for Create, Please check body schema.
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/IQueryPagination'
+                - $ref: '#/components/schemas/IReqBoNewsViewsDetail'
+      responses: 
+        '200':    # status code
+          description: .
+          content:
+            application/json:
+              schema: 
+                allOf:
+                  - $ref: '#/components/schemas/IPagination'
+                  - type: object
+                    properties:
+                      data_list:
+                        type: array
+                        items:
+                          allOf:
+                            - $ref: '#/components/schemas/INewsViewModel'
   
 # Jump Client New
   /v1/news/list/read:
@@ -573,7 +610,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/IQueryPagination'
+              allOf:
+                - $ref: '#/components/schemas/IQueryPagination'
+                - type: object
+                  properties:
+                    newst_id:
+                      type: array
+                      items:
+                        type: integer
+                    is_recommended:
+                      type: boolean
+                      description: sort 1.ยอดไลค์ 2.ยอดวิว 3.สร้างใหม่ *อนาคตซับซ้อนกว่านี้
+                    is_related:
+                      type: boolean
+                      description: ต้องมี newst_id เพื่อหาความสัมพันธ์ 1.ข่าวที่อยู่ในประเภทข่าวเหมือนกัน 2.ข่าวที่ผู้เขียนเดียวกัน *อนาคตซับซ้อนกว่านี้
       responses:
         '200':    # status code
           description: .
@@ -581,14 +631,40 @@ paths:
             application/json:
               schema: 
                $ref: '#/components/schemas/IPagRespAllNewsHomeReadList'
+  /v1/news/read:
+    post:
+      tags:
+        - News
+        - Develop Sequence
+      summary: AML201 Read news detail by id.
+      description: |
+        ผู้ใข้ดูรายละเอียดข่าว 1 ข่าวด้วย id
+      requestBody:
+        description: Some field Mandatory for Create, Please check body schema.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IQueryReqNewsRead'
+      responses:
+        '200':    # status code
+          description: .
+          content:
+            application/json:
+              schema: 
+               allOf:
+                - $ref: '#/components/schemas/NewsModel'
+                - $ref: '#/components/schemas/AdminPopulate'
+                - $ref: '#/components/schemas/NewsTypeList4NewsHome'
+                - $ref: '#/components/schemas/NewsImageList4NewsHome'
   # AML201 /v1/news/read:
   # AML202 /v1/news/update:
   # AML203 /v1/news/delete:
-  # AML204 /v1/news/views:
   /v1/news/views/collect:
     post:
       tags:
         - News
+        - News Options
         - Develop Sequence
       summary: AML204 News View Collect for stats.
       description: |
@@ -611,10 +687,11 @@ paths:
     post:
       tags:
         - News
+        - News Options
         - Develop Sequence
       summary: AML205 News Like from users.
       description: |
-        เก็บข้อมูลจำนวนผู้ชอบข่าว (ยอดไลค์), สร้าง news_liked_total_rlt_users บันทึก user และ increment news.news_liked_total หากเป็น user คนใหม่ต่อข่าว
+        เก็บข้อมูลจำนวนผู้ชอบข่าว (ยอดไลค์), สร้าง news_liked_total_rlt_users บันทึก user และ Increment news.news_liked_total หากเป็น user คนใหม่ต่อข่าว
       security:
         - bearerAuthAmlFt: []
       requestBody:
@@ -631,7 +708,59 @@ paths:
             application/json:
               schema: 
                $ref: '#/components/schemas/NewsModel'
-          
+  /v1/news/like/cancel:
+    post:
+      tags:
+        - News
+        - News Options
+        - Develop Sequence
+      summary: AML206 News Cancel Like from users.
+      description: |
+        ยกเลิกผู้ชอบข่าว (ยอดไลค์), ลบ news_liked_total_rlt_users ของ user และ Decrement news.news_liked_total 
+      security:
+        - bearerAuthAmlFt: []
+      requestBody:
+        description: Some field Mandatory for Create, Please check body schema.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IReqLikeNews'
+      responses:
+        '200':    # status code
+          description: .
+          content:
+            application/json:
+              schema: 
+               $ref: '#/components/schemas/NewsModel'
+  /v1/news/like/list/read:
+    post:
+      tags:
+        - News
+        - Backoffice
+        - News Options
+        - Develop Sequence
+      summary: AML207 News Like Detail.
+      description: |
+        ดูที่มาข้อมูลผู้กดไลค์ทั้งหมดใน 1 ข่าว
+      security:
+        - bearerAuthAmlFt: []
+      requestBody:
+        description: Some field Mandatory for Create, Please check body schema.
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/IQueryPagination'
+                - $ref: '#/components/schemas/IReqLikeNews'
+      responses:
+        '200':    # status code
+          description: .
+          content:
+            application/json:
+              schema: 
+               $ref: '#/components/schemas/IPagRespAllNewsUsersLikeList'                     
   
 
 security:
@@ -829,12 +958,17 @@ components:
     News2NewsTypesModel:
       type: object
       properties:
-        newst_id:
+        newst_list:
           type: array
           items:
-            type: integer
-          # format: int32
-          description: 'id ของ newst_type เพื่อบ่งบอกประเภทของข่าวสาร เป็น array'
+            type: object
+            properties:           
+              newst_id:
+                type: integer
+                description: 'id ของ newst_type เพื่อบ่งบอกประเภทของข่าวสาร'
+              newst_title:
+                type: string
+                description: 'หัวข้อประเภทข่าวสาร'
 
       required:
         - newst_id
@@ -1058,7 +1192,44 @@ components:
         - $ref: '#/components/schemas/NewsModel'
       required:
         - news_id
-      
-
-        
-    
+    IPagRespAllNewsUsersLikeList:
+      allOf:
+        - type: object
+          properties:
+            data_list:
+              type: array
+              items:
+                allOf:
+                  - $ref: '#/components/schemas/IUsersLikeDetail'
+        - $ref: '#/components/schemas/IPagination'
+    IUsersLikeDetail:
+      description: table.users&table.news_liked_total_rlt_users
+      type: object
+      properties:
+        u_uid:
+          type: string
+          example: f3%21l|5m235
+        u_username:
+          type: string
+          example: amblotto123
+        nltrltu_created_at:
+          type: string
+          format: date-time
+    IReqBoNewsViewsDetail:
+      allOf:
+        - $ref: '#/components/schemas/NewsModel'
+      required:
+        - news_id     
+    INewsViewModel:
+      description: table.news_viewed_total_rlt_external_users
+      type: object
+      properties:
+        nvtrltu_id:
+          type: integer
+          example: 1
+        nvtrltu_viewed_ip:
+          type: string
+          example: '192.168.0.1'
+        nvtrltu_created_at:
+          type: string
+          format: date-time
