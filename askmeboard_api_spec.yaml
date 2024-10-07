@@ -27,7 +27,7 @@ info:
     | 2 Oct 24   | 1.1.6   | API AML204 news view, AML205 news like |
     | 3 Oct 24   | 1.1.7   | API AML206 news cancel like, AML207 user liked list, AML956 bo view list |
     | 3 Oct 24   | 1.1.8   | API AML201 news details, AML200 Add Query Recommended and Relate |
-    | *x Oct 24   | 1.1.x   | API Favourite System, Check Lottery Result |
+    | 7 Oct 24   | 1.1.9   | เพิ่ม table: users_rlt_favourite_news และ เพิ่ม field: news.news_favourited_total กระทบข้อมูล NewsModel ทั้งหมด, API AML208 fav collect กระทบ AML200และ201 เพิ่ม bool fav บุคคล, AML209 fav cancel, fav new list ใช้ AML200 เดิม |
 
   contact:
     email: jesada.ka@buildextech.com
@@ -55,6 +55,12 @@ tags:
     description: Everything about your News Types
   - name: News
     description: Everything about your News
+  - name: Like
+    description: Everything about your Like
+  - name: Favourite
+    description: Everything about your Favourite
+  - name: View
+    description: Everything about your View
   - name: External Systems
     description: Everything about your External Systems
   - name: Static File
@@ -624,6 +630,7 @@ paths:
                     is_related:
                       type: boolean
                       description: ต้องมี newst_id เพื่อหาความสัมพันธ์ 1.ข่าวที่อยู่ในประเภทข่าวเหมือนกัน 2.ข่าวที่ผู้เขียนเดียวกัน *อนาคตซับซ้อนกว่านี้
+                - $ref: '#/components/schemas/FavNewPopulate'      
       responses:
         '200':    # status code
           description: .
@@ -657,6 +664,7 @@ paths:
                 - $ref: '#/components/schemas/AdminPopulate'
                 - $ref: '#/components/schemas/NewsTypeList4NewsHome'
                 - $ref: '#/components/schemas/NewsImageList4NewsHome'
+                - $ref: '#/components/schemas/FavNewPopulate'
   # AML201 /v1/news/read:
   # AML202 /v1/news/update:
   # AML203 /v1/news/delete:
@@ -665,6 +673,7 @@ paths:
       tags:
         - News
         - News Options
+        - View
         - Develop Sequence
       summary: AML204 News View Collect for stats.
       description: |
@@ -688,6 +697,7 @@ paths:
       tags:
         - News
         - News Options
+        - Like
         - Develop Sequence
       summary: AML205 News Like from users.
       description: |
@@ -713,6 +723,7 @@ paths:
       tags:
         - News
         - News Options
+        - Like
         - Develop Sequence
       summary: AML206 News Cancel Like from users.
       description: |
@@ -739,6 +750,7 @@ paths:
         - News
         - Backoffice
         - News Options
+        - Like
         - Develop Sequence
       summary: AML207 News Like Detail.
       description: |
@@ -760,8 +772,62 @@ paths:
           content:
             application/json:
               schema: 
-               $ref: '#/components/schemas/IPagRespAllNewsUsersLikeList'                     
-  
+                $ref: '#/components/schemas/IPagRespAllNewsUsersLikeList'                     
+  /v1/news/fav/collect:
+    post:
+      tags:
+        - News
+        - News Options
+        - Favourite
+        - Develop Sequence
+      summary: AML208 User Favourite News.
+      description: |
+        ผู้ใช้ชื่นชอบข่าวสารเก็บไว้ดูภายหลัง (dev) สร้าง users_rlt_favourite_news เพื่อบันทึกความเชื่อมโยง
+      security:
+        - bearerAuthAmlFt: []
+      requestBody:
+        description: Some field Mandatory for Create, Please check body schema.
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/IReqLikeNews'
+      responses:
+        '200':    # status code
+          description: .
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/NewsModel'
+  /v1/news/fav/cancel:
+    post:
+      tags:
+        - News
+        - News Options
+        - Favourite
+        - Develop Sequence
+      summary: AML209 User Favourite News.
+      description: |
+        ผู้ใช้ยกเลิกระบบชื่นชอบข่าวสารเก็บไว้ดูภายหลัง (dev) ลบ users_rlt_favourite_news เพื่อยกเลิกข้อมูล
+      security:
+        - bearerAuthAmlFt: []
+      requestBody:
+        description: Some field Mandatory for Create, Please check body schema.
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/IReqLikeNews'
+      responses:
+        '200':    # status code
+          description: .
+          content:
+            application/json:
+              schema: 
+               $ref: '#/components/schemas/NewsModel'
+
 
 security:
   - bearerAuthAmlFt: []         # use the same name as above
@@ -914,6 +980,9 @@ components:
         news_liked_total:
           type: integer
           description: 'จำนวนคนกดไลค์ (Total likes)'
+        news_favourited_total:
+          type: integer
+          description: 'จำนวนผู้กดชื่นชอบ (Total member favourite news)'
         news_created_at:
           type: string
           format: date-time
@@ -1156,6 +1225,7 @@ components:
               - $ref: '#/components/schemas/AdminPopulate'
               - $ref: '#/components/schemas/NewsTypeList4NewsHome'
               - $ref: '#/components/schemas/NewsImageList4NewsHome'
+              - $ref: '#/components/schemas/FavNewPopulate'
     IPagRespAllNewsHomeReadList:
       allOf:
         - $ref: '#/components/schemas/IDListRespAllNewsHomeReadList'
@@ -1233,3 +1303,10 @@ components:
         nvtrltu_created_at:
           type: string
           format: date-time
+    FavNewPopulate:
+      type: object
+      properties:
+        is_favourite:
+          type: boolean
+          example: false
+          description: 'กดชื่นชอบไว้ใช่หรือไม่'
