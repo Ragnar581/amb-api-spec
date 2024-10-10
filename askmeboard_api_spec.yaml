@@ -28,6 +28,7 @@ info:
     | 3 Oct 24   | 1.1.7   | API AML206 news cancel like, AML207 user liked list, AML956 bo view list |
     | 3 Oct 24   | 1.1.8   | API AML201 news details, AML200 Add Query Recommended and Relate |
     | 7 Oct 24   | 1.1.9   | เพิ่ม table: users_rlt_favourite_news และ เพิ่ม field: news.news_favourited_total กระทบข้อมูล NewsModel ทั้งหมด, API AML208 fav collect กระทบ AML200และ201 เพิ่ม bool fav บุคคล, AML209 fav cancel, fav new list ใช้ AML200 เดิม |
+    | 10 Oct 24   | 1.1.10   | แก้ชื่อ columns: u_uid ใน table: users เป็น u_uuid ให้ถูกต้อง กระทบทุก API ที่มี u_uid |
 
   contact:
     email: jesada.ka@buildextech.com
@@ -873,7 +874,7 @@ components:
       description: table.users
       type: object
       properties:
-        u_uid:
+        u_uuid:
           type: string
           example: f3%21l|5m235
         u_username:
@@ -1082,7 +1083,7 @@ components:
       description: for query by uid
       type: object
       properties:
-        u_uid:
+        u_uuid:
           type: string
           example: T3l45^43lb
           description: =
