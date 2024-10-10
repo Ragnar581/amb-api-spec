@@ -284,7 +284,7 @@ paths:
         - Backoffice
         - Develop Sequence
       summary: AML912 Returns one users.
-      description: bo ดูข้อมูล user 1 คนด้วย uid โดยไม่มี Admin
+      description: bo ดูข้อมูล user 1 คนด้วย uuid โดยไม่มี Admin
       requestBody:
         description: Optional description in *Markdown*
         required: false
@@ -1062,10 +1062,10 @@ components:
       description: for query list
       type: object
       properties:
-        uid:
+        uuid:
           type: string
           example: T3l45^43lb
-          description: =
+          description: Contain
         username:
           type: string
           example: amlu12
@@ -1080,7 +1080,7 @@ components:
       items:
         $ref: '#/components/schemas/UsersModel'
     IReqUserReadQuery:
-      description: for query by uid
+      description: for query by uuid
       type: object
       properties:
         u_uuid:
@@ -1277,7 +1277,7 @@ components:
       description: table.users&table.news_liked_total_rlt_users
       type: object
       properties:
-        u_uid:
+        u_uuid:
           type: string
           example: f3%21l|5m235
         u_username:
