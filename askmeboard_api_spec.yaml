@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: AskmeBoard
+  title: สาระหวย
   description: |
     # API ReadMe
     - ทุก API ใช้ Method POST
@@ -29,6 +29,8 @@ info:
     | 3 Oct 24   | 1.1.8   | API AML201 news details, AML200 Add Query Recommended and Relate |
     | 7 Oct 24   | 1.1.9   | เพิ่ม table: users_rlt_favourite_news และ เพิ่ม field: news.news_favourited_total กระทบข้อมูล NewsModel ทั้งหมด, API AML208 fav collect กระทบ AML200และ201 เพิ่ม bool fav บุคคล, AML209 fav cancel, fav new list ใช้ AML200 เดิม |
     | 10 Oct 24   | 1.1.10   | แก้ชื่อ columns: u_uid ใน table: users เป็น u_uuid ให้ถูกต้อง กระทบทุก API ที่มี u_uid |
+    | 6 Nov 24   | 1.1.11   | เปลี่ยนชื่อ Doc เป็น สาระหวย, table: news เพิ่ม news_render_size, news_priority, table: news_types เพิ่ม newst_bg_colour |
+    | 7 Nov 24   | 1.1.12   | เพิ่ม field newst_bg_colour ใน NewsTypesModel, newst_bg_colour เพิ่มใน bo api [AML940, AML941, AML942, AML943] |
 
   contact:
     email: jesada.ka@buildextech.com
@@ -610,7 +612,7 @@ paths:
         - Develop Sequence
       summary: AML200 Read news list.
       description: |
-        ผู้ใข้ดูข่าวสารหน้าหลัก (Home) Client ประยุกต์การใช้งานข้อมูลด้วยตัวเอง เช่นเรื่องข้อมูลขนาดใหญ่ เล็ก หรือ การจัดกลุ่มข้อมูล
+        ผู้ใข้ดูข่าวสารหน้าหลัก (Home) Client ประยุกต์การใช้งานข้อมูลด้วยตัวเอง เช่นเรื่องข้อมูลขนาดใหญ่ เล็ก หรือ การจัดกลุ่มข้อมูล เรียงข้อมูลแบบ Pattern แบ่งส่วนข้อมูล 6
       requestBody:
         description: Some field Mandatory for Create, Please check body schema.
         required: true
@@ -942,6 +944,9 @@ components:
           type: integer
           format: int64
           description: 'จำนวนผู้ติดตามประเภทข่าว'
+        newst_bg_colour:
+          type: string
+          description: 'รหัสสี RGB ex: #ffffff'
         newst_created_at:
           type: string
           format: date-time
@@ -984,6 +989,12 @@ components:
         news_favourited_total:
           type: integer
           description: 'จำนวนผู้กดชื่นชอบ (Total member favourite news)'
+        news_render_size:
+          type: string
+          description: ขนาดการแสดงผล 'S', 'L'
+        news_priority:
+          type: integer
+          description: ลำดับความสำคัญข้อมูล สำคัญที่สุดคือ 1
         news_created_at:
           type: string
           format: date-time
